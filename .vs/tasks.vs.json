@@ -1,0 +1,10 @@
+{
+  "version": "0.2.1",
+  "tasks": [
+    {
+      "taskLabel": "задача-genshin-impact-gacha-helper",
+      "appliesTo": "/",
+      "type": "launch"
+    }
+  ]
+}
