@@ -6,28 +6,109 @@ import urllib3
 import certifi
 import ast
 import csv
+import configparser
 
 http = urllib3.PoolManager(ca_certs=certifi.where())
 environ_username = os.environ['username']
+config = configparser.ConfigParser()
 
-server_name = 'os_euro'
-lang = 'ru-ru'
-
-file_path = r'C:\Users\%s\AppData\LocalLow\miHoYo\Genshin Impact\output_log.txt' % (environ_username)
-f = open (file_path,'r', encoding="utf-8")
-for line in f:
-    if re.search('OnGetWebViewPageFinish:',line):
-        if re.search('/log',line):
-            dirty_url = str(line)
-f.close()
-url = dirty_url[23:-6]
-fragment = urllib.parse.urlparse(url)
-fragments = dict(urllib.parse.parse_qs(fragment.query))
 path = os.getcwd()
+file_path = r'C:\Users\%s\AppData\LocalLow\miHoYo\Genshin Impact\output_log.txt' % (environ_username) 
+setting_path = path+'\\settings.ini'
+
+if not os.path.exists(file_path) and not os.path.exists(setting_path): #output_log.txt и settings.ini не найдены
+    print('Файлы данных пользователя не найдены.')
+    input("Press Enter to continue...")
+if not os.path.exists(file_path) and os.path.exists(setting_path): #output_log.txt не найден
+    print('Используются ранее сохраненные данные. Возможны расхождения значений.')
+    config.read(setting_path)
+    region = config.get('Settings','server')
+    lang = config.get('Settings','lang')
+    authkey_ver = config.get('Settings','authentication_ley_version')
+    authkey = config.get('Settings','authentication_key')
+    gacha_id = config.get('Check','last_banner_id')
+    init_type = config.get('Check','last_banner_code')
+if os.path.exists(file_path) and not os.path.exists(setting_path): #settings.ini не найден
+    f = open (file_path,'r', encoding="utf-8")
+    for line in f:
+        if re.search('OnGetWebViewPageFinish:',line):
+            if re.search('/log',line):
+                dirty_url = str(line)
+    f.close()
+    url = dirty_url[23:-6]
+    fragment = urllib.parse.urlparse(url)
+    fragments = dict(urllib.parse.parse_qs(fragment.query))
+    region = fragments['region'][0]
+    lang = fragments['lang'][0]
+    authkey_ver = fragments['authkey_ver'][0]
+    authkey = fragments['authkey'][0]
+    gacha_id = fragments['gacha_id'][0]
+    init_type = fragments['init_type'][0]
+    config.add_section('Settings')
+    config.set('Settings','server',region)
+    config.set('Settings','lang',lang)
+    config.set('Settings','authentication_key_version',authkey_ver)
+    config.set('Settings','authentication_key',authkey)
+    config.add_section('Check')
+    config.set('Check','last_banner_id',gacha_id)
+    config.set('Check','last_banner_code',init_type)
+    with open(setting_path, "w") as config_file:
+        config.write(config_file)
+if os.path.exists(file_path) and os.path.exists(setting_path): #оба файла на месте
+    f = open (file_path,'r', encoding="utf-8")
+    for line in f:
+        if re.search('OnGetWebViewPageFinish:',line):
+            if re.search('/log',line):
+                dirty_url = str(line)
+    f.close()
+    url = dirty_url[23:-6]
+    fragment = urllib.parse.urlparse(url)
+    fragments = dict(urllib.parse.parse_qs(fragment.query))
+    region = fragments['region'][0]
+    lang = fragments['lang'][0]
+    authkey_ver = fragments['authkey_ver'][0]
+    authkey = fragments['authkey'][0]
+    gacha_id = fragments['gacha_id'][0]
+    init_type = fragments['init_type'][0]
+    config.add_section('Settings')
+    config.set('Settings','server',region)
+    config.set('Settings','lang',lang)
+    config.set('Settings','authentication_key_version',authkey_ver)
+    config.set('Settings','authentication_key',authkey)
+    config.add_section('Check')
+    config.set('Check','last_banner_id',gacha_id)
+    config.set('Check','last_banner_code',init_type)
+    with open(setting_path, "w") as config_file:
+        config.write(config_file)
+
+gacha_path = path+'\\gacha\\'
 try:
-    os.mkdir(path+'/'+fragments['region'][0])
+    os.mkdir(gacha_path)
 except OSError:
     print ("Создать директорию не удалось")
+try:
+    os.mkdir(gacha_path+region)
+except OSError:
+    print ("Создать директорию не удалось")
+
+if not os.path.exists(gacha_path+'gacha_custom_code_list'):
+    f = open(gacha_path+'gacha_custom_code_list', 'w', encoding='utf-8')
+    f.close()
+f = open(gacha_path+'gacha_custom_code_list', 'r', encoding='utf-8')
+urllib.request.urlretrieve('https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/gacha_code_list', path+'\\gacha\\gacha_code_list')
+gacha_code_file = open(path+'\\gacha\\gacha_code_list', 'r', encoding="utf-8")
+gacha_code=[]
+for g in gacha_code_file:
+    gacha_code.append(g[:-1])
+for g in f:
+    gacha_code.append(g[:-1])
+gacha_code_file.close()
+f.close()
+if init_type not in gacha_code:
+    gacha_code.append(init_type)
+    f = open(gacha_path+'gacha_custom_code_list', 'a', encoding='utf-8')
+    f.write(init_type+'\n')
+    f.close()
 
 for gacha in ['100','200','301','302']:
     while_end = 0
@@ -35,7 +116,7 @@ for gacha in ['100','200','301','302']:
     path_gacha_log = ''
     array = []
     while while_end == 0:
-        payload = {'authkey_ver':fragments['authkey_ver'][0], 'region':fragments['region'][0], 'authkey':fragments['authkey'][0],'gacha_type':gacha, 'page':page, 'size':'20'}
+        payload = {'authkey_ver':authkey_ver, 'region':region, 'authkey':authkey,'gacha_type':gacha, 'page':page, 'size':'20'}
         newurl = 'https://hk4e-api-os.mihoyo.com/event/gacha_info/api/getGachaLog' 
         req = http.request('GET', newurl, fields=payload)
         dict_str = req.data.decode("UTF-8")
@@ -46,9 +127,9 @@ for gacha in ['100','200','301','302']:
             for item_list in mydata['data']['list']:
                 array.append([item_list['item_id'],item_list['time']])
             user_id = mydata['data']['list'][0]['uid']
-            path_gacha_log = path+'\\'+fragments['region'][0]+'\\'+mydata['data']['list'][0]['uid']
+            path_gacha_log = gacha_path+region+'\\'+mydata['data']['list'][0]['uid']
             try:
-                os.mkdir(path+'\\'+fragments['region'][0]+'\\'+mydata['data']['list'][0]['uid'])
+                os.mkdir(gacha_path+region+'\\'+mydata['data']['list'][0]['uid'])
             except OSError:
                 print ("Создать директорию не удалось")
         page = page + 1
@@ -128,7 +209,8 @@ s5_index=[]
 s4_index=[]
 s3_index=[]
 
-
+lang='ru-ru' #Это надо будет сделать правильным и адекватным
+server_name = region #Надо не забыть удалить и поменять
 star_5 = open (path+'\\items\\'+server_name+'\\'+lang+'\\star_5.csv','r', encoding="utf-8")
 s5=list(csv.reader(star_5))
 star_5.close()
@@ -148,7 +230,7 @@ for i in s3:
 
 for gacha in ['100','200','301','302']:
     try:
-        f = open(path+'\\'+server_name+'\\'+user_id+'\\'+gacha+'.csv', 'r', encoding="utf-8")
+        f = open(gacha_path+'\\'+server_name+'\\'+user_id+'\\'+gacha+'.csv', 'r', encoding="utf-8")
     except:
         print('Файл не найден')
     gacha_dict[gacha]=list(csv.reader(f))

@@ -5,6 +5,11 @@
       "taskLabel": "задача-genshin-impact-gacha-helper",
       "appliesTo": "/",
       "type": "launch"
+    },
+    {
+      "taskLabel": "задача-gacha_id_list",
+      "appliesTo": "items/gacha_id_list",
+      "type": "launch"
     }
   ]
 }
