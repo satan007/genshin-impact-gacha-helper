@@ -7,6 +7,7 @@ import certifi
 import ast
 import csv
 import configparser
+import webbrowser
 
 http = urllib3.PoolManager(ca_certs=certifi.where())
 environ_username = os.environ['username']
@@ -19,7 +20,8 @@ setting_path = path+'\\settings.ini'
 if not os.path.exists(file_path) and not os.path.exists(setting_path): #output_log.txt и settings.ini не найдены
     print('Файлы данных пользователя не найдены.')
     input("Press Enter to continue...")
-if not os.path.exists(file_path) and os.path.exists(setting_path): #output_log.txt не найден
+    sys.exit()
+elif not os.path.exists(file_path) and os.path.exists(setting_path): #output_log.txt не найден
     print('Используются ранее сохраненные данные. Возможны расхождения значений.')
     config.read(setting_path)
     region = config.get('Settings','server')
@@ -28,89 +30,115 @@ if not os.path.exists(file_path) and os.path.exists(setting_path): #output_log.t
     authkey = config.get('Settings','authentication_key')
     gacha_id = config.get('Check','last_banner_id')
     init_type = config.get('Check','last_banner_code')
-if os.path.exists(file_path) and not os.path.exists(setting_path): #settings.ini не найден
+elif os.path.exists(file_path) and not os.path.exists(setting_path): #settings.ini не найден
+    f = open (file_path,'r', encoding="utf-8")
+    dirty_url=''
+    for line in f:
+        if re.search('OnGetWebViewPageFinish:',line):
+            if re.search('/log',line):
+                dirty_url = str(line)
+    f.close()
+    if dirty_url != '':
+        url = dirty_url[23:-6]
+        fragment = urllib.parse.urlparse(url)
+        fragments = dict(urllib.parse.parse_qs(fragment.query))
+        region = fragments['region'][0]
+        lang = fragments['lang'][0]
+        authkey_ver = fragments['authkey_ver'][0]
+        authkey = fragments['authkey'][0]
+        gacha_id = fragments['gacha_id'][0]
+        init_type = fragments['init_type'][0]
+        config.add_section('Settings')
+        config.set('Settings','server',region)
+        config.set('Settings','lang',lang)
+        config.set('Settings','authentication_key_version',authkey_ver)
+        config.set('Settings','authentication_key',authkey)
+        config.add_section('Check')
+        config.set('Check','last_banner_id',gacha_id)
+        config.set('Check','last_banner_code',init_type)
+        with open(setting_path, "w") as config_file:
+            config.write(config_file)
+    else:
+        print('Файлы данных пользователя не найдены.')
+        input("Press Enter to continue...")
+        sys.exit()
+elif os.path.exists(file_path) and os.path.exists(setting_path): #оба файла на месте
     f = open (file_path,'r', encoding="utf-8")
     for line in f:
         if re.search('OnGetWebViewPageFinish:',line):
             if re.search('/log',line):
                 dirty_url = str(line)
     f.close()
-    url = dirty_url[23:-6]
-    fragment = urllib.parse.urlparse(url)
-    fragments = dict(urllib.parse.parse_qs(fragment.query))
-    region = fragments['region'][0]
-    lang = fragments['lang'][0]
-    authkey_ver = fragments['authkey_ver'][0]
-    authkey = fragments['authkey'][0]
-    gacha_id = fragments['gacha_id'][0]
-    init_type = fragments['init_type'][0]
-    config.add_section('Settings')
-    config.set('Settings','server',region)
-    config.set('Settings','lang',lang)
-    config.set('Settings','authentication_key_version',authkey_ver)
-    config.set('Settings','authentication_key',authkey)
-    config.add_section('Check')
-    config.set('Check','last_banner_id',gacha_id)
-    config.set('Check','last_banner_code',init_type)
-    with open(setting_path, "w") as config_file:
-        config.write(config_file)
-if os.path.exists(file_path) and os.path.exists(setting_path): #оба файла на месте
-    f = open (file_path,'r', encoding="utf-8")
-    for line in f:
-        if re.search('OnGetWebViewPageFinish:',line):
-            if re.search('/log',line):
-                dirty_url = str(line)
-    f.close()
-    url = dirty_url[23:-6]
-    fragment = urllib.parse.urlparse(url)
-    fragments = dict(urllib.parse.parse_qs(fragment.query))
-    region = fragments['region'][0]
-    lang = fragments['lang'][0]
-    authkey_ver = fragments['authkey_ver'][0]
-    authkey = fragments['authkey'][0]
-    gacha_id = fragments['gacha_id'][0]
-    init_type = fragments['init_type'][0]
-    config.add_section('Settings')
-    config.set('Settings','server',region)
-    config.set('Settings','lang',lang)
-    config.set('Settings','authentication_key_version',authkey_ver)
-    config.set('Settings','authentication_key',authkey)
-    config.add_section('Check')
-    config.set('Check','last_banner_id',gacha_id)
-    config.set('Check','last_banner_code',init_type)
-    with open(setting_path, "w") as config_file:
-        config.write(config_file)
+    if dirty_url != '':
+        url = dirty_url[23:-6]
+        fragment = urllib.parse.urlparse(url)
+        fragments = dict(urllib.parse.parse_qs(fragment.query))
+        region = fragments['region'][0]
+        lang = fragments['lang'][0]
+        authkey_ver = fragments['authkey_ver'][0]
+        authkey = fragments['authkey'][0]
+        gacha_id = fragments['gacha_id'][0]
+        init_type = fragments['init_type'][0]
+        config.add_section('Settings')
+        config.set('Settings','server',region)
+        config.set('Settings','lang',lang)
+        config.set('Settings','authentication_key_version',authkey_ver)
+        config.set('Settings','authentication_key',authkey)
+        config.add_section('Check')
+        config.set('Check','last_banner_id',gacha_id)
+        config.set('Check','last_banner_code',init_type)
+        with open(setting_path, "w") as config_file:
+            config.write(config_file)
+    else:
+        print('Используются ранее сохраненные данные. Возможны расхождения значений.')
+        config.read(setting_path)
+        region = config.get('Settings','server')
+        lang = config.get('Settings','lang')
+        authkey_ver = config.get('Settings','authentication_ley_version')
+        authkey = config.get('Settings','authentication_key')
+        gacha_id = config.get('Check','last_banner_id')
+        init_type = config.get('Check','last_banner_code')
 
-gacha_path = path+'\\gacha\\'
+
+gacha_path = path+'\\gacha'
 try:
     os.mkdir(gacha_path)
 except OSError:
-    print ("Создать директорию не удалось")
+    if not os.path.exists(gacha_path):
+        print ("Создать директорию не удалось")
 try:
-    os.mkdir(gacha_path+region)
+    os.mkdir(gacha_path+'\\'+region)
 except OSError:
-    print ("Создать директорию не удалось")
+    if not os.path.exists(gacha_path+'\\'+region):
+        print ("Создать директорию не удалось")
 
-if not os.path.exists(gacha_path+'gacha_custom_code_list'):
-    f = open(gacha_path+'gacha_custom_code_list', 'w', encoding='utf-8')
+if not os.path.exists(gacha_path+'\\'+'gacha_custom_code_list'):
+    f = open(gacha_path+'\\'+'gacha_custom_code_list', 'w', encoding='utf-8')
     f.close()
-f = open(gacha_path+'gacha_custom_code_list', 'r', encoding='utf-8')
-urllib.request.urlretrieve('https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/gacha_code_list', path+'\\gacha\\gacha_code_list')
-gacha_code_file = open(path+'\\gacha\\gacha_code_list', 'r', encoding="utf-8")
+f = open(gacha_path+'\\'+'gacha_custom_code_list', 'r', encoding='utf-8')
+try:
+    urllib.request.urlretrieve('https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/gacha_code_list', path+'\\gacha\\gacha_code_list')
+except:
+    print ("Не могу загрузить файл https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/gacha_code_list")
 gacha_code=[]
-for g in gacha_code_file:
-    gacha_code.append(g[:-1])
+try:
+    gacha_code_file = open(gacha_path+'\\'+'gacha_code_list', 'r', encoding="utf-8")
+    for g in gacha_code_file:
+        gacha_code.append(g[:-1])
+    gacha_code_file.close()
+except:
+    print ("Не могу найти файл %s\gacha_code_list" % gacha_path)
 for g in f:
     gacha_code.append(g[:-1])
-gacha_code_file.close()
+
 f.close()
 if init_type not in gacha_code:
     gacha_code.append(init_type)
-    f = open(gacha_path+'gacha_custom_code_list', 'a', encoding='utf-8')
+    f = open(gacha_path+'\\'+'gacha_custom_code_list', 'a', encoding='utf-8')
     f.write(init_type+'\n')
     f.close()
 
-for gacha in ['100','200','301','302']:
+for gacha in gacha_code:
     while_end = 0
     page = 1
     path_gacha_log = ''
@@ -127,80 +155,134 @@ for gacha in ['100','200','301','302']:
             for item_list in mydata['data']['list']:
                 array.append([item_list['item_id'],item_list['time']])
             user_id = mydata['data']['list'][0]['uid']
-            path_gacha_log = gacha_path+region+'\\'+mydata['data']['list'][0]['uid']
+            path_gacha_log = gacha_path+'\\'+region+'\\'+user_id
             try:
-                os.mkdir(gacha_path+region+'\\'+mydata['data']['list'][0]['uid'])
+                os.mkdir(path_gacha_log)
             except OSError:
-                print ("Создать директорию не удалось")
+                if not os.path.exists(path_gacha_log):
+                    print ("Создать директорию не удалось")
         page = page + 1
     if path_gacha_log != '':
         f = open(path_gacha_log+'\\'+gacha+'.csv', 'w', encoding="utf-8")
         for i in array:
             f.write(i[0]+','+i[1]+'\n')
         f.close()
+
+lang_dict = {
+        'en': "en-us",
+        'fr': "fr-fr",
+        'de': "de-de",
+        'es': "es-es",
+        'pt': "pt-pt",
+        'ru': "ru-ru",
+        'ja': "ja-jp",
+        'ko': "ko-kr",
+        'th': "th-th",
+        'vi': "vi-vn",
+        'id': "id-id",
+        'tc': "zh-tw",
+        'sc': "zh-cn"
+    }
+
+lang=lang_dict[lang]
+items_path = path+'\\'+'items'
 try:
-    os.mkdir(path+'\\items')
+    os.mkdir(items_path)
 except OSError:
-    print ("Создать директорию не удалось")
-urllib.request.urlretrieve('https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/gacha_id_list', path+'\\items\\gacha_id_list')
-gacha_id_file = open(path+'\\items\\gacha_id_list', 'r', encoding="utf-8")
-gacha_id=[]
-for g in gacha_id_file:
-    gacha_id.append(g)
-gacha_id_file.close()
-for k in ['os_euro']:
-    try:
-        os.mkdir(path+'\\items\\'+k)
-    except OSError:
+    if not os.path.exists(items_path):
         print ("Создать директорию не удалось")
-    for j in ['ru-ru','en-us','fr-fr','de-de','es-es','pt-pt','ja-jp','ko-kr','th-th','vi-vn','id-id','zh-tw','zh-cn']:
-        try:
-            os.mkdir(path+'\\items\\'+k+'\\'+j)
-        except OSError:
-            print ("Создать директорию не удалось")
+if not os.path.exists(items_path+'\\'+'gacha_custom_id_list'):
+    f = open(items_path+'\\'+'gacha_custom_id_list', 'w', encoding='utf-8')
+    f.close()
+f = open(items_path+'\\'+'gacha_custom_id_list', 'r', encoding='utf-8')
+try:
+    urllib.request.urlretrieve('https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/gacha_id_list', path+'\\items\\gacha_id_list')
+except:
+    print ("Не могу загрузить файл https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/gacha_id_list")
+gacha_id_array=[]
 
-        star_5_old = []
-        star_4_old = []
-        star_3_old = []
-        star_5 = []
-        star_4 = []
-        star_3 = []
-        for line in gacha_id:
-            items_request = http.request('GET', 'https://webstatic-sea.mihoyo.com/hk4e/gacha_info/%s/%s/%s.json'%(k,line[:-1],j))
-            if items_request.status == 200:
-                items = items_request.data.decode("UTF-8")
-                items = ast.literal_eval(items)
-                for s5 in items['r5_prob_list']:
-                    star_5_old.append([s5['item_id'],s5['item_type'],s5['item_name']])
-                for s4 in items['r4_prob_list']:
-                    star_4_old.append([s4['item_id'],s4['item_type'],s4['item_name']])
-                for s3 in items['r3_prob_list']:
-                    star_3_old.append([s3['item_id'],s3['item_type'],s3['item_name']])
-        star_5_old = sorted(star_5_old)
-        star_4_old = sorted(star_4_old)
-        star_3_old = sorted(star_3_old)
-        for i in star_5_old:
-            if i not in star_5:
-                star_5.append(i)
-        for i in star_4_old:
-            if i not in star_4:
-                star_4.append(i)
-        for i in star_3_old:
-            if i not in star_3:
-                star_3.append(i)
+try:
+    gacha_id_file = open(items_path+'\\'+'gacha_id_list', 'r', encoding="utf-8")
+    for g in gacha_id_file:
+        gacha_id_array.append(g)
+    gacha_id_file.close()
+except:
+    print ("Не могу найти файл %s\gacha_id_list" % items_path)
+for g in f:
+    gacha_id_array.append(g[:-1])
+if gacha_id not in gacha_id_array:
+    gacha_id_array.append(gacha_id)
+    f = open(items_path+'\\'+'gacha_custom_id_list', 'a', encoding='utf-8')
+    f.write(gacha_id+'\n')
+    f.close()
 
-        f = open(path+'\\items\\'+k+'\\'+j+'\\star_5.csv','w', encoding="utf-8")
-        for l in star_5:
-            f.write(str(l[0])+','+str(l[1])+','+str(l[2])+'\n')
-        f.close()
-        f = open(path+'\\items\\'+k+'\\'+j+'\\star_4.csv','w', encoding="utf-8")
-        for l in star_4:
-            f.write(str(l[0])+','+str(l[1])+','+str(l[2])+'\n')
-        f.close()
-        f = open(path+'\\items\\'+k+'\\'+j+'\\star_3.csv','w', encoding="utf-8")
-        for l in star_3:
-            f.write(str(l[0])+','+str(l[1])+','+str(l[2])+'\n')
-        f.close()
+
+try:
+    os.mkdir(items_path+'\\'+region)
+except OSError:
+    if not os.path.exists(items_path+'\\'+region):
+        print ("Создать директорию не удалось")
+
+try:
+    os.mkdir(items_path+'\\'+region+'\\'+lang)
+except OSError:
+    if not os.path.exists(items_path+'\\'+region+'\\'+lang):
+        print ("Создать директорию не удалось")
+
+star_5_old = []
+star_4_old = []
+star_3_old = []
+star_5 = []
+star_4 = []
+star_3 = []
+try:
+    urllib.request.urlretrieve('https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/items/%s/%s/star_3.csv' % (region, lang), path+'\\items\\%s\\%s\\star_3.csv' % (region, lang))
+except:
+    print ("Не могу загрузить файл https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/items/%s/%s/star_3.csv" % (region, lang))
+try:
+    urllib.request.urlretrieve('https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/items/%s/%s/star_4.csv' % (region, lang), path+'\\items\\%s\\%s\\star_4.csv' % (region, lang))
+except:
+    print ("Не могу загрузить файл https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/items/%s/%s/star_4.csv" % (region, lang))
+try:
+    urllib.request.urlretrieve('https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/items/%s/%s/star_5.csv' % (region, lang), path+'\\items\\%s\\%s\\star_5.csv' % (region, lang))
+except:
+    print ("Не могу загрузить файл https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/items/%s/%s/star_5.csv" % (region, lang))
+for line in gacha_id_array:
+    items_request = http.request('GET', 'https://webstatic-sea.mihoyo.com/hk4e/gacha_info/%s/%s/%s.json'%(region,line[:-1],lang))
+    if items_request.status == 200:
+        items = items_request.data.decode("UTF-8")
+        items = ast.literal_eval(items)
+        for s5 in items['r5_prob_list']:
+            star_5_old.append([s5['item_id'],s5['item_type'],s5['item_name']])
+        for s4 in items['r4_prob_list']:
+            star_4_old.append([s4['item_id'],s4['item_type'],s4['item_name']])
+        for s3 in items['r3_prob_list']:
+            star_3_old.append([s3['item_id'],s3['item_type'],s3['item_name']])
+star_5_old = sorted(star_5_old)
+star_4_old = sorted(star_4_old)
+star_3_old = sorted(star_3_old)
+for i in star_5_old:
+    if i not in star_5:
+        star_5.append(i)
+for i in star_4_old:
+    if i not in star_4:
+        star_4.append(i)
+for i in star_3_old:
+    if i not in star_3:
+        star_3.append(i)
+
+f = open(path+'\\items\\'+region+'\\'+lang+'\\star_5.csv','w', encoding="utf-8")
+for l in star_5:
+    f.write(str(l[0])+','+str(l[1])+','+str(l[2])+'\n')
+f.close()
+f = open(path+'\\items\\'+region+'\\'+lang+'\\star_4.csv','w', encoding="utf-8")
+for l in star_4:
+    f.write(str(l[0])+','+str(l[1])+','+str(l[2])+'\n')
+f.close()
+f = open(path+'\\items\\'+region+'\\'+lang+'\\star_3.csv','w', encoding="utf-8")
+for l in star_3:
+    f.write(str(l[0])+','+str(l[1])+','+str(l[2])+'\n')
+f.close()
 
 #Шаг №3. Получение сохранненых ранее данных и расчет вероятности
 gacha_dict={}
@@ -209,7 +291,6 @@ s5_index=[]
 s4_index=[]
 s3_index=[]
 
-lang='ru-ru' #Это надо будет сделать правильным и адекватным
 server_name = region #Надо не забыть удалить и поменять
 star_5 = open (path+'\\items\\'+server_name+'\\'+lang+'\\star_5.csv','r', encoding="utf-8")
 s5=list(csv.reader(star_5))
@@ -228,9 +309,12 @@ for i in s4:
 for i in s3:
     s3_index.append(i[0])
 
+
+
 for gacha in ['100','200','301','302']:
+    gacha_translated=open(path+'\\end_%s.txt' % gacha,'w',encoding='utf-8')
     try:
-        f = open(gacha_path+'\\'+server_name+'\\'+user_id+'\\'+gacha+'.csv', 'r', encoding="utf-8")
+        f = open(gacha_path+'\\'+'\\'+server_name+'\\'+user_id+'\\'+gacha+'.csv', 'r', encoding="utf-8")
     except:
         print('Файл не найден')
     gacha_dict[gacha]=list(csv.reader(f))
@@ -265,14 +349,19 @@ for gacha in ['100','200','301','302']:
             s4_count = 1
         elif i[3]=='5':
             s5_count = 1
+        gacha_translated.write(i[0]+','+i[1]+','+i[2]+','+i[3]+'\n')
     s4_percent=(100*s4_count)/10
     s5_percent=(1-((1-0.006)**s5_count))*100
     if s5_count == 90:
         s5_percent=100,0
-    gacha_percent[gacha]={'star_4':s4_percent,'star_5':s5_percent}
+    gacha_percent[gacha]={'star_4':s4_percent,'star_5':s5_percent,'star_4_count':s4_count,'star_5_count':s5_count}
+    gacha_translated.close()
 
-f=open(path+'\\percent.txt','w',encoding='utf-8')
-f.write(str(gacha_percent))
+html_page = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no"><title>Untitled</title><link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css"><link rel="stylesheet" href="assets/fonts/ionicons.min.css"><link rel="stylesheet" href="assets/css/styles.min.css"></head><body style="background-color: #333333;"><div class="container py-5"><div class="row"><div class="col-lg-12 text-center mx-auto mb-5 text-white"><h1 class="display-4 text-white">Genshin Impact Gacha Helper</h1></div></div><div class="row"><div class="col col-xl-6 col-lg-6 mb-4"><div class="bg-white rounded-lg p-5 shadow" style="background-color: #ffffff;"><div class="row"><div class="col"><h4 class="h6 font-weight-bold text-center mb-4">Молитва новичка</h4></div></div><div class="row"><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="text-center"><div class="progress mx-auto" data-value="{0}">  <span class="progress-left"><span class="progress-bar border-primary"></span>  </span>  <span class="progress-right"><span class="progress-bar border-primary"></span>  </span>  <div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{1}<sup class="small">%</sup></div>  </div></div></div></div><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="progress mx-auto" data-value="{2}">  <span class="progress-left"><span class="progress-bar border-primary"></span>  </span>  <span class="progress-right"><span class="progress-bar border-primary"></span>  </span>  <div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{3}<sup class="small">%</sup></div>  </div></div></div></div><div class="row text-center mt-4"><div class="col"><h4 class="h4 font-weight-bold mb-0">{4}\\10</h4></div><div class="col"><h4 class="font-weight-bold mb-0">{5}\\90</h4></div></div></div></div><div class="col col-xl-6 col-lg-6 mb-4"><div class="bg-white rounded-lg p-5 shadow" style="background-color: #ffffff;"><div class="row"><div class="col"><h4 class="h6 font-weight-bold text-center mb-4">Стандартная молитва</h4></div></div><div class="row"><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="text-center"><div class="progress mx-auto" data-value="{6}">  <span class="progress-left"><span class="progress-bar border-primary"></span>  </span>  <span class="progress-right"><span class="progress-bar border-primary"></span>  </span>  <div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{7}<sup class="small">%</sup></div>  </div></div></div></div><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="progress mx-auto" data-value="{8}">  <span class="progress-left"><span class="progress-bar border-primary"></span>  </span>  <span class="progress-right"><span class="progress-bar border-primary"></span>  </span>  <div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{9}<sup class="small">%</sup></div>  </div></div></div></div><div class="row text-center mt-4"><div class="col"><h4 class="h4 font-weight-bold mb-0">{10}\\10</h4></div><div class="col"><h4 class="font-weight-bold mb-0">{11}\\90</h4></div></div></div></div></div><div class="row"><div class="col col-xl-6 col-lg-6 mb-4"><div class="bg-white rounded-lg p-5 shadow" style="background-color: #ffffff;"><div class="row"><div class="col"><h4 class="h6 font-weight-bold text-center mb-4">Молитва события персонажа</h4></div></div><div class="row"><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="text-center"><div class="progress mx-auto" data-value="{12}">  <span class="progress-left"><span class="progress-bar border-primary"></span>  </span>  <span class="progress-right"><span class="progress-bar border-primary"></span>  </span>  <div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{13}<sup class="small">%</sup></div>  </div></div></div></div><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="progress mx-auto" data-value="{14}">  <span class="progress-left"><span class="progress-bar border-primary"></span>  </span>  <span class="progress-right"><span class="progress-bar border-primary"></span>  </span>  <div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{15}<sup class="small">%</sup></div>  </div></div></div></div><div class="row text-center mt-4"><div class="col"><h4 class="h4 font-weight-bold mb-0">{16}\\10</h4></div><div class="col"><h4 class="font-weight-bold mb-0">{17}\\90</h4></div></div></div></div><div class="col col-xl-6 col-lg-6 mb-4"><div class="bg-white rounded-lg p-5 shadow" style="background-color: #ffffff;"><div class="row"><div class="col"><h4 class="h6 font-weight-bold text-center mb-4">Молитва события оружия</h4></div></div><div class="row"><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="text-center"><div class="progress mx-auto" data-value="{18}">  <span class="progress-left"><span class="progress-bar border-primary"></span>  </span>  <span class="progress-right"><span class="progress-bar border-primary"></span>  </span>  <div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{19}<sup class="small">%</sup></div>  </div></div></div></div><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="progress mx-auto" data-value="{20}">  <span class="progress-left"><span class="progress-bar border-primary"></span>  </span>  <span class="progress-right"><span class="progress-bar border-primary"></span>  </span>  <div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{21}<sup class="small">%</sup></div>  </div></div></div></div><div class="row text-center mt-4"><div class="col"><h4 class="h4 font-weight-bold mb-0">{22}\\10</h4></div><div class="col"><h4 class="font-weight-bold mb-0">{23}\\90</h4></div></div></div></div></div><span></span></div><div class="d-lg-flex justify-content-lg-center align-items-lg-end footer-basic"><footer><div class="social"><a href="#"><i class="icon ion-social-instagram"></i></a><a href="#"><i class="icon ion-social-snapchat"></i></a><a href="#"><i class="icon ion-social-twitter"></i></a><a href="#"><i class="icon ion-social-facebook"></i></a></div><ul class="list-inline"><li class="list-inline-item"><a href="#">Home</a></li><li class="list-inline-item"><a href="#">Services</a></li><li class="list-inline-item"><a href="#">About</a></li><li class="list-inline-item"><a href="#">Terms</a></li><li class="list-inline-item"><a href="#">Privacy Policy</a></li></ul><p class="copyright">Company Name © 2017</p></footer></div><script src="assets/js/jquery.min.js"></script><script src="assets/bootstrap/js/bootstrap.min.js"></script><script src="assets/js/script.min.js"></script></body></html>'.format(str(round(gacha_percent['100']['star_4'])),str(round(gacha_percent['100']['star_4'],3)),str(gacha_percent['100']['star_5']),str(round(gacha_percent['100']['star_5'])),str(round(gacha_percent['100']['star_4_count'],3)),str(gacha_percent['100']['star_5_count']),str(round(gacha_percent['200']['star_4'])),str(round(gacha_percent['200']['star_4'],3)),str(gacha_percent['200']['star_5']),str(round(gacha_percent['200']['star_5'])),str(round(gacha_percent['200']['star_4_count'],3)),str(gacha_percent['200']['star_5_count']),str(round(gacha_percent['301']['star_4'])),str(round(gacha_percent['301']['star_4'],3)),str(gacha_percent['301']['star_5']),str(round(gacha_percent['301']['star_5'])),str(round(gacha_percent['301']['star_4_count'],3)),str(gacha_percent['301']['star_5_count']),str(round(gacha_percent['302']['star_4'])),str(round(gacha_percent['302']['star_4'],3)),str(gacha_percent['302']['star_5']),str(round(gacha_percent['302']['star_5'])),str(round(gacha_percent['302']['star_4_count'],3)),str(gacha_percent['302']['star_5_count']))
+
+f=open(path+'\\index.html','w',encoding='utf-8')
+f.write(str(html_page))
 f.close()
+webbrowser.open (path+'\\index.html', new=2)
 print(gacha_percent)
 print('end')
