@@ -348,15 +348,21 @@ for gacha in ['100','200','301','302']:
         elif i[4]=='-1':
             gacha_img=gacha_img+'<img style="width: 20%;" src="items/img/{}.png" />'.format(i[0])
         gacha_translated.write(i[2]+','+i[1]+','+i[3]+','+i[4]+'\n')
-    s4_percent=(100*s4_count)/10
+    
     if gacha=='302':
         s5_percent=(1-((1-0.007)**s5_count))*100
+        s4_percent=(1-((1-0.060)**s4_count))*100
         if s5_count == 80:
             s5_percent=100,0
+        if s4_count==10:
+            s5_percent=0,6
     else:
         s5_percent=(1-((1-0.006)**s5_count))*100
+        s4_percent=(1-((1-0.051)**s4_count))*100
         if s5_count == 90:
             s5_percent=100,0
+        if s4_count==10:
+            s5_percent=0,6
     gacha_percent[gacha]={'star_4':s4_percent,'star_5':s5_percent,'star_4_count':s4_count,'star_5_count':s5_count,'img':gacha_img,'count':len(gacha_dict[gacha])}
     gacha_translated.close()
 
