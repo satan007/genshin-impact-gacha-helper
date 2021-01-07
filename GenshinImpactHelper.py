@@ -64,6 +64,7 @@ elif os.path.exists(file_path) and not os.path.exists(setting_path): #settings.i
         sys.exit()
 elif os.path.exists(file_path) and os.path.exists(setting_path): #оба файла на месте
     f = open (file_path,'r', encoding="utf-8")
+    dirty_url=''
     for line in f:
         if re.search('OnGetWebViewPageFinish:',line):
             if re.search('/log',line):
@@ -94,7 +95,7 @@ elif os.path.exists(file_path) and os.path.exists(setting_path): #оба фай�
         config.read(setting_path)
         region = config.get('Settings','server')
         lang = config.get('Settings','lang')
-        authkey_ver = config.get('Settings','authentication_ley_version')
+        authkey_ver = config.get('Settings','authentication_key_version')
         authkey = config.get('Settings','authentication_key')
         gacha_id = config.get('Check','last_banner_id')
         init_type = config.get('Check','last_banner_code')
@@ -137,7 +138,7 @@ if init_type not in gacha_code:
     f = open(gacha_path+'\\'+'gacha_custom_code_list', 'a', encoding='utf-8')
     f.write(init_type+'\n')
     f.close()
-
+gacha_code = [line.rstrip() for line in gacha_code]
 for gacha in gacha_code:
     while_end = 0
     page = 1
@@ -229,9 +230,7 @@ except OSError:
     if not os.path.exists(items_path+'\\'+region+'\\'+lang):
         print ("Создать директорию не удалось")
 
-star_5_old = []
-star_4_old = []
-star_3_old = []
+
 star_5 = []
 star_4 = []
 star_3 = []
@@ -239,25 +238,46 @@ try:
     urllib.request.urlretrieve('https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/items/%s/%s/star_3.csv' % (region, lang), path+'\\items\\%s\\%s\\star_3.csv' % (region, lang))
 except:
     print ("Не могу загрузить файл https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/items/%s/%s/star_3.csv" % (region, lang))
+    print ("Создаю пустой файл")
+    f = open(path+'\\items\\'+region+'\\'+lang+'\\star_3.csv','w', encoding="utf-8")
+    f.close()
 try:
     urllib.request.urlretrieve('https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/items/%s/%s/star_4.csv' % (region, lang), path+'\\items\\%s\\%s\\star_4.csv' % (region, lang))
 except:
     print ("Не могу загрузить файл https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/items/%s/%s/star_4.csv" % (region, lang))
+    print ("Создаю пустой файл")
+    f = open(path+'\\items\\'+region+'\\'+lang+'\\star_4.csv','w', encoding="utf-8")
+    f.close()
 try:
     urllib.request.urlretrieve('https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/items/%s/%s/star_5.csv' % (region, lang), path+'\\items\\%s\\%s\\star_5.csv' % (region, lang))
 except:
     print ("Не могу загрузить файл https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/items/%s/%s/star_5.csv" % (region, lang))
+    print ("Создаю пустой файл")
+    f = open(path+'\\items\\'+region+'\\'+lang+'\\star_5.csv','w', encoding="utf-8")
+    f.close()
+f = open(path+'\\items\\'+region+'\\'+lang+'\\star_5.csv','r', encoding="utf-8")
+star_5_old = list(csv.reader(f))
+f.close()
+f = open(path+'\\items\\'+region+'\\'+lang+'\\star_3.csv','r', encoding="utf-8")
+star_3_old = list(csv.reader(f))
+f.close()
+f = open(path+'\\items\\'+region+'\\'+lang+'\\star_4.csv','r', encoding="utf-8")
+star_4_old = list(csv.reader(f))
+f.close()
+gacha_id_array = [line.rstrip() for line in gacha_id_array]
 for line in gacha_id_array:
-    items_request = http.request('GET', 'https://webstatic-sea.mihoyo.com/hk4e/gacha_info/%s/%s/%s.json'%(region,line[:-1],lang))
+    items_request = http.request('GET', 'https://webstatic-sea.mihoyo.com/hk4e/gacha_info/%s/%s/%s.json'%(region,line,lang))
     if items_request.status == 200:
         items = items_request.data.decode("UTF-8")
         items = ast.literal_eval(items)
         for s5 in items['r5_prob_list']:
-            star_5_old.append([s5['item_id'],s5['item_type'],s5['item_name']])
+            star_5_old.append([str(s5['item_id']),s5['item_type'],s5['item_name']])
         for s4 in items['r4_prob_list']:
-            star_4_old.append([s4['item_id'],s4['item_type'],s4['item_name']])
+            star_4_old.append([str(s4['item_id']),s4['item_type'],s4['item_name']])
         for s3 in items['r3_prob_list']:
-            star_3_old.append([s3['item_id'],s3['item_type'],s3['item_name']])
+            star_3_old.append([str(s3['item_id']),s3['item_type'],s3['item_name']])
+    else:
+        print('as')
 star_5_old = sorted(star_5_old)
 star_4_old = sorted(star_4_old)
 star_3_old = sorted(star_3_old)
@@ -291,14 +311,14 @@ s5_index=[]
 s4_index=[]
 s3_index=[]
 
-server_name = region #Надо не забыть удалить и поменять
-star_5 = open (path+'\\items\\'+server_name+'\\'+lang+'\\star_5.csv','r', encoding="utf-8")
+
+star_5 = open (path+'\\items\\'+region+'\\'+lang+'\\star_5.csv','r', encoding="utf-8")
 s5=list(csv.reader(star_5))
 star_5.close()
-star_4 = open (path+'\\items\\'+server_name+'\\'+lang+'\\star_4.csv','r', encoding="utf-8")
+star_4 = open (path+'\\items\\'+region+'\\'+lang+'\\star_4.csv','r', encoding="utf-8")
 s4=list(csv.reader(star_4))
 star_4.close()
-star_3 = open (path+'\\items\\'+server_name+'\\'+lang+'\\star_3.csv','r', encoding="utf-8")
+star_3 = open (path+'\\items\\'+region+'\\'+lang+'\\star_3.csv','r', encoding="utf-8")
 s3=list(csv.reader(star_3))
 star_3.close()
 
@@ -312,56 +332,63 @@ for i in s3:
 
 
 for gacha in ['100','200','301','302']:
-    gacha_translated=open(path+'\\end_%s.txt' % gacha,'w',encoding='utf-8')
+    gacha_translated=open(gacha_path+'\\'+region+'\\'+user_id+'\\'+'end_%s.csv' % gacha,'w',encoding='utf-8')
     try:
-        f = open(gacha_path+'\\'+'\\'+server_name+'\\'+user_id+'\\'+gacha+'.csv', 'r', encoding="utf-8")
+        f = open(gacha_path+'\\'+region+'\\'+user_id+'\\'+gacha+'.csv', 'r', encoding="utf-8")
     except:
         print('Файл не найден')
     gacha_dict[gacha]=list(csv.reader(f))
-    print(len(gacha_dict[gacha]))
+    #print(len(gacha_dict[gacha]))
     for i in range(len(gacha_dict[gacha])):
         if gacha_dict[gacha][i][0] in s3_index:
             index = s3_index.index(gacha_dict[gacha][i][0])
-            gacha_dict[gacha][i][0] = s3[index][2]
+            gacha_dict[gacha][i].append(s3[index][2])
             gacha_dict[gacha][i].append(s3[index][1])
             gacha_dict[gacha][i].append('3')
         elif gacha_dict[gacha][i][0] in s4_index:
             index = s4_index.index(gacha_dict[gacha][i][0])
-            gacha_dict[gacha][i][0] = s4[index][2]
+            gacha_dict[gacha][i].append(s4[index][2])
             gacha_dict[gacha][i].append(s4[index][1])
             gacha_dict[gacha][i].append('4')
         elif gacha_dict[gacha][i][0] in s5_index:
             index = s5_index.index(gacha_dict[gacha][i][0])
-            gacha_dict[gacha][i][0] = s5[index][2]
+            gacha_dict[gacha][i].append(s5[index][2])
             gacha_dict[gacha][i].append(s5[index][1])
             gacha_dict[gacha][i].append('5')
         else:
+            gacha_dict[gacha][i].append('')
+            gacha_dict[gacha][i].append('')
             gacha_dict[gacha][i].append('-1')
     gacha_dict[gacha].reverse()
     s4_percent = 0,0
     s5_percent = 0,0
     s4_count = 1
     s5_count = 1
+    gacha_img=''
     for i in gacha_dict[gacha]:
         s4_count=s4_count+1
         s5_count=s5_count+1
-        if i[3]=='4':
+        if i[4]=='4':
             s4_count = 1
-        elif i[3]=='5':
+            gacha_img=gacha_img+'<img style="width: 20%;" src="items/img/{}.png" />'.format(i[0])
+        elif i[4]=='5':
             s5_count = 1
-        gacha_translated.write(i[0]+','+i[1]+','+i[2]+','+i[3]+'\n')
+            gacha_img=gacha_img+'<img style="width: 20%;" src="items/img/{}.png" />'.format(i[0])
+        elif i[4]=='-1':
+            gacha_img=gacha_img+'<img style="width: 20%;" src="items/img/{}.png" />'.format(i[0])
+        gacha_translated.write(i[2]+','+i[1]+','+i[3]+','+i[4]+'\n')
     s4_percent=(100*s4_count)/10
     s5_percent=(1-((1-0.006)**s5_count))*100
     if s5_count == 90:
         s5_percent=100,0
-    gacha_percent[gacha]={'star_4':s4_percent,'star_5':s5_percent,'star_4_count':s4_count,'star_5_count':s5_count}
+    gacha_percent[gacha]={'star_4':s4_percent,'star_5':s5_percent,'star_4_count':s4_count,'star_5_count':s5_count,'img':gacha_img,'count':len(gacha_dict[gacha])}
     gacha_translated.close()
 
-html_page = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no"><title>Untitled</title><link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css"><link rel="stylesheet" href="assets/fonts/ionicons.min.css"><link rel="stylesheet" href="assets/css/styles.min.css"></head><body style="background-color: #333333;"><div class="container py-5"><div class="row"><div class="col-lg-12 text-center mx-auto mb-5 text-white"><h1 class="display-4 text-white">Genshin Impact Gacha Helper</h1></div></div><div class="row"><div class="col col-xl-6 col-lg-6 mb-4"><div class="bg-white rounded-lg p-5 shadow" style="background-color: #ffffff;"><div class="row"><div class="col"><h4 class="h6 font-weight-bold text-center mb-4">Молитва новичка</h4></div></div><div class="row"><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="text-center"><div class="progress mx-auto" data-value="{0}">  <span class="progress-left"><span class="progress-bar border-primary"></span>  </span>  <span class="progress-right"><span class="progress-bar border-primary"></span>  </span>  <div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{1}<sup class="small">%</sup></div>  </div></div></div></div><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="progress mx-auto" data-value="{2}">  <span class="progress-left"><span class="progress-bar border-primary"></span>  </span>  <span class="progress-right"><span class="progress-bar border-primary"></span>  </span>  <div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{3}<sup class="small">%</sup></div>  </div></div></div></div><div class="row text-center mt-4"><div class="col"><h4 class="h4 font-weight-bold mb-0">{4}\\10</h4></div><div class="col"><h4 class="font-weight-bold mb-0">{5}\\90</h4></div></div></div></div><div class="col col-xl-6 col-lg-6 mb-4"><div class="bg-white rounded-lg p-5 shadow" style="background-color: #ffffff;"><div class="row"><div class="col"><h4 class="h6 font-weight-bold text-center mb-4">Стандартная молитва</h4></div></div><div class="row"><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="text-center"><div class="progress mx-auto" data-value="{6}">  <span class="progress-left"><span class="progress-bar border-primary"></span>  </span>  <span class="progress-right"><span class="progress-bar border-primary"></span>  </span>  <div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{7}<sup class="small">%</sup></div>  </div></div></div></div><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="progress mx-auto" data-value="{8}">  <span class="progress-left"><span class="progress-bar border-primary"></span>  </span>  <span class="progress-right"><span class="progress-bar border-primary"></span>  </span>  <div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{9}<sup class="small">%</sup></div>  </div></div></div></div><div class="row text-center mt-4"><div class="col"><h4 class="h4 font-weight-bold mb-0">{10}\\10</h4></div><div class="col"><h4 class="font-weight-bold mb-0">{11}\\90</h4></div></div></div></div></div><div class="row"><div class="col col-xl-6 col-lg-6 mb-4"><div class="bg-white rounded-lg p-5 shadow" style="background-color: #ffffff;"><div class="row"><div class="col"><h4 class="h6 font-weight-bold text-center mb-4">Молитва события персонажа</h4></div></div><div class="row"><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="text-center"><div class="progress mx-auto" data-value="{12}">  <span class="progress-left"><span class="progress-bar border-primary"></span>  </span>  <span class="progress-right"><span class="progress-bar border-primary"></span>  </span>  <div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{13}<sup class="small">%</sup></div>  </div></div></div></div><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="progress mx-auto" data-value="{14}">  <span class="progress-left"><span class="progress-bar border-primary"></span>  </span>  <span class="progress-right"><span class="progress-bar border-primary"></span>  </span>  <div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{15}<sup class="small">%</sup></div>  </div></div></div></div><div class="row text-center mt-4"><div class="col"><h4 class="h4 font-weight-bold mb-0">{16}\\10</h4></div><div class="col"><h4 class="font-weight-bold mb-0">{17}\\90</h4></div></div></div></div><div class="col col-xl-6 col-lg-6 mb-4"><div class="bg-white rounded-lg p-5 shadow" style="background-color: #ffffff;"><div class="row"><div class="col"><h4 class="h6 font-weight-bold text-center mb-4">Молитва события оружия</h4></div></div><div class="row"><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="text-center"><div class="progress mx-auto" data-value="{18}">  <span class="progress-left"><span class="progress-bar border-primary"></span>  </span>  <span class="progress-right"><span class="progress-bar border-primary"></span>  </span>  <div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{19}<sup class="small">%</sup></div>  </div></div></div></div><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="progress mx-auto" data-value="{20}">  <span class="progress-left"><span class="progress-bar border-primary"></span>  </span>  <span class="progress-right"><span class="progress-bar border-primary"></span>  </span>  <div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{21}<sup class="small">%</sup></div>  </div></div></div></div><div class="row text-center mt-4"><div class="col"><h4 class="h4 font-weight-bold mb-0">{22}\\10</h4></div><div class="col"><h4 class="font-weight-bold mb-0">{23}\\90</h4></div></div></div></div></div><span></span></div><div class="d-lg-flex justify-content-lg-center align-items-lg-end footer-basic"><footer><div class="social"><a href="#"><i class="icon ion-social-instagram"></i></a><a href="#"><i class="icon ion-social-snapchat"></i></a><a href="#"><i class="icon ion-social-twitter"></i></a><a href="#"><i class="icon ion-social-facebook"></i></a></div><ul class="list-inline"><li class="list-inline-item"><a href="#">Home</a></li><li class="list-inline-item"><a href="#">Services</a></li><li class="list-inline-item"><a href="#">About</a></li><li class="list-inline-item"><a href="#">Terms</a></li><li class="list-inline-item"><a href="#">Privacy Policy</a></li></ul><p class="copyright">Company Name © 2017</p></footer></div><script src="assets/js/jquery.min.js"></script><script src="assets/bootstrap/js/bootstrap.min.js"></script><script src="assets/js/script.min.js"></script></body></html>'.format(str(round(gacha_percent['100']['star_4'])),str(round(gacha_percent['100']['star_4'],3)),str(gacha_percent['100']['star_5']),str(round(gacha_percent['100']['star_5'])),str(round(gacha_percent['100']['star_4_count'],3)),str(gacha_percent['100']['star_5_count']),str(round(gacha_percent['200']['star_4'])),str(round(gacha_percent['200']['star_4'],3)),str(gacha_percent['200']['star_5']),str(round(gacha_percent['200']['star_5'])),str(round(gacha_percent['200']['star_4_count'],3)),str(gacha_percent['200']['star_5_count']),str(round(gacha_percent['301']['star_4'])),str(round(gacha_percent['301']['star_4'],3)),str(gacha_percent['301']['star_5']),str(round(gacha_percent['301']['star_5'])),str(round(gacha_percent['301']['star_4_count'],3)),str(gacha_percent['301']['star_5_count']),str(round(gacha_percent['302']['star_4'])),str(round(gacha_percent['302']['star_4'],3)),str(gacha_percent['302']['star_5']),str(round(gacha_percent['302']['star_5'])),str(round(gacha_percent['302']['star_4_count'],3)),str(gacha_percent['302']['star_5_count']))
+html_page = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no"><title>Untitled</title><link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css"><link rel="stylesheet" href="assets/css/styles.min.css"></head><body style="background-color: #333333;"><div class="container py-5"><div class="row"><div class="col-lg-12 text-center mx-auto mb-5 text-white"><h1 class="display-4 text-white">Genshin Impact Gacha Helper</h1></div></div><div class="row"><div class="col col-xl-6 col-lg-6 mb-4"><div class="bg-white rounded-lg p-5 shadow" style="background-color: #ffffff;"><div class="row"><div class="col"><h4 class="h6 font-weight-bold text-center mb-4">Молитва новичка({})</h4></div></div><div class="row"><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="text-center"><div class="progress mx-auto" data-value="{}"><span class="progress-left"><span class="progress-bar border-primary"></span></span><span class="progress-right"><span class="progress-bar border-primary"></span></span><div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{}<sup class="small">%</sup></div></div></div></div></div><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="progress mx-auto" data-value="{}"><span class="progress-left"><span class="progress-bar border-primary"></span></span><span class="progress-right"><span class="progress-bar border-primary"></span></span><div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{}<sup class="small">%</sup></div></div></div></div></div><div class="row text-center mt-4"><div class="col"><h4 class="h4 font-weight-bold mb-0">{}\\10</h4></div><div class="col"><h4 class="font-weight-bold mb-0">{}\\90</h4></div></div><div class="row text-center mt-4"><div class="col"><h4 class="h6 font-weight-bold text-center mb-4">Последние полученные</h4></div></div><div class="row"><div class="col">{}</div></div></div></div><div class="col col-xl-6 col-lg-6 mb-4"><div class="bg-white rounded-lg p-5 shadow" style="background-color: #ffffff;"><div class="row"><div class="col"><h4 class="h6 font-weight-bold text-center mb-4">Стандартная молитва({})</h4></div></div><div class="row"><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="text-center"><div class="progress mx-auto" data-value="{}"><span class="progress-left"><span class="progress-bar border-primary"></span></span><span class="progress-right"><span class="progress-bar border-primary"></span></span><div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{}<sup class="small">%</sup></div></div></div></div></div><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="progress mx-auto" data-value="{}"><span class="progress-left"><span class="progress-bar border-primary"></span></span><span class="progress-right"><span class="progress-bar border-primary"></span></span><div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{}<sup class="small">%</sup></div></div></div></div></div><div class="row text-center mt-4"><div class="col"><h4 class="h4 font-weight-bold mb-0">{}\\10</h4></div><div class="col"><h4 class="font-weight-bold mb-0">{}\\90</h4></div></div><div class="row text-center mt-4"><div class="col"><h4 class="h6 font-weight-bold text-center mb-4">Последние полученные</h4></div></div><div class="row"><div class="col">{}</div></div></div></div></div><div class="row"><div class="col col-xl-6 col-lg-6 mb-4"><div class="bg-white rounded-lg p-5 shadow" style="background-color: #ffffff;"><div class="row"><div class="col"><h4 class="h6 font-weight-bold text-center mb-4">Молитва события персонажа({})</h4></div></div><div class="row"><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="text-center"><div class="progress mx-auto" data-value="{}"><span class="progress-left"><span class="progress-bar border-primary"></span></span><span class="progress-right"><span class="progress-bar border-primary"></span></span><div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{}<sup class="small">%</sup></div></div></div></div></div><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="progress mx-auto" data-value="{}"><span class="progress-left"><span class="progress-bar border-primary"></span></span><span class="progress-right"><span class="progress-bar border-primary"></span></span><div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{}<sup class="small">%</sup></div></div></div></div></div><div class="row text-center mt-4"><div class="col"><h4 class="h4 font-weight-bold mb-0">{}\\10</h4></div><div class="col"><h4 class="font-weight-bold mb-0">{}\\90</h4></div></div><div class="row text-center mt-4"><div class="col"><h4 class="h6 font-weight-bold text-center mb-4">Последние полученные</h4></div></div><div class="row"><div class="col">{}</div></div></div></div><div class="col col-xl-6 col-lg-6 mb-4"><div class="bg-white rounded-lg p-5 shadow" style="background-color: #ffffff;"><div class="row"><div class="col"><h4 class="h6 font-weight-bold text-center mb-4">Молитва события оружия({})</h4></div></div><div class="row"><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="text-center"><div class="progress mx-auto" data-value="{}"><span class="progress-left"><span class="progress-bar border-primary"></span></span><span class="progress-right"><span class="progress-bar border-primary"></span></span><div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{}<sup class="small">%</sup></div></div></div></div></div><div class="col"><div class="text-center"><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span><span class="star-img"></span></div><div class="progress mx-auto" data-value="{}"><span class="progress-left"><span class="progress-bar border-primary"></span></span><span class="progress-right"><span class="progress-bar border-primary"></span></span><div class="progress-value w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"><div class="h2 font-weight-bold">{}<sup class="small">%</sup></div></div></div></div></div><div class="row text-center mt-4"><div class="col"><h4 class="h4 font-weight-bold mb-0">{}\\10</h4></div><div class="col"><h4 class="font-weight-bold mb-0">{}\\90</h4></div></div><div class="row text-center mt-4"><div class="col"><h4 class="h6 font-weight-bold text-center mb-4">Последние полученные</h4></div></div><div class="row"><div class="col">{}</div></div></div></div></div><span></span></div><script src="assets/js/jquery.min.js"></script><script src="assets/bootstrap/js/bootstrap.min.js"></script><script src="assets/js/script.min.js"></script></body></html>'.format(str(gacha_percent['100']['count']),str(round(gacha_percent['100']['star_4'])),str(round(gacha_percent['100']['star_4'],3)),str(round(gacha_percent['100']['star_5'])),str(round(gacha_percent['100']['star_5'],3)),str(gacha_percent['100']['star_4_count']),str(gacha_percent['100']['star_5_count']),str(gacha_percent['100']['img']),str(gacha_percent['200']['count']),str(round(gacha_percent['200']['star_4'])),str(round(gacha_percent['200']['star_4'],3)),str(round(gacha_percent['200']['star_5'])),str(round(gacha_percent['200']['star_5'],3)),str(gacha_percent['200']['star_4_count']),str(gacha_percent['200']['star_5_count']),str(gacha_percent['200']['img']),str(gacha_percent['301']['count']),str(round(gacha_percent['301']['star_4'])),str(round(gacha_percent['301']['star_4'],3)),str(round(gacha_percent['301']['star_5'])),str(round(gacha_percent['301']['star_5'],3)),str(gacha_percent['301']['star_4_count']),str(gacha_percent['301']['star_5_count']),str(gacha_percent['301']['img']),str(gacha_percent['302']['count']),str(round(gacha_percent['302']['star_4'])),str(round(gacha_percent['302']['star_4'],3)),str(round(gacha_percent['302']['star_5'])),str(round(gacha_percent['302']['star_5'],3)),str(gacha_percent['302']['star_4_count']),str(gacha_percent['302']['star_5_count']),str(gacha_percent['302']['img']))
 
 f=open(path+'\\index.html','w',encoding='utf-8')
 f.write(str(html_page))
 f.close()
 webbrowser.open (path+'\\index.html', new=2)
-print(gacha_percent)
-print('end')
+#print(gacha_percent)
+#print('end')
