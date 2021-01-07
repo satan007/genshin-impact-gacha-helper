@@ -1,7 +1,12 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\items",
+    "\\items\\os_asia",
+    "\\items\\os_asia\\ru-ru",
+    "\\items\\os_euro",
+    "\\items\\os_euro\\ru-ru"
   ],
-  "SelectedNode": "\\gacha_code_list",
+  "SelectedNode": "\\GenshinImpactHelper.py",
   "PreviewInSolutionExplorer": false
 }
