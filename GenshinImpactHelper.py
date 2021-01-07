@@ -187,35 +187,6 @@ lang_dict = {
 
 lang=lang_dict[lang]
 items_path = path+'\\'+'items'
-try:
-    os.mkdir(items_path)
-except OSError:
-    if not os.path.exists(items_path):
-        print ("Создать директорию не удалось")
-if not os.path.exists(items_path+'\\'+'gacha_custom_id_list'):
-    f = open(items_path+'\\'+'gacha_custom_id_list', 'w', encoding='utf-8')
-    f.close()
-f = open(items_path+'\\'+'gacha_custom_id_list', 'r', encoding='utf-8')
-try:
-    urllib.request.urlretrieve('https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/gacha_id_list', path+'\\items\\gacha_id_list')
-except:
-    print ("Не могу загрузить файл https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/gacha_id_list")
-gacha_id_array=[]
-
-try:
-    gacha_id_file = open(items_path+'\\'+'gacha_id_list', 'r', encoding="utf-8")
-    for g in gacha_id_file:
-        gacha_id_array.append(g)
-    gacha_id_file.close()
-except:
-    print ("Не могу найти файл %s\gacha_id_list" % items_path)
-for g in f:
-    gacha_id_array.append(g[:-1])
-if gacha_id not in gacha_id_array:
-    gacha_id_array.append(gacha_id)
-    f = open(items_path+'\\'+'gacha_custom_id_list', 'a', encoding='utf-8')
-    f.write(gacha_id+'\n')
-    f.close()
 
 
 try:
@@ -264,20 +235,20 @@ f.close()
 f = open(path+'\\items\\'+region+'\\'+lang+'\\star_4.csv','r', encoding="utf-8")
 star_4_old = list(csv.reader(f))
 f.close()
-gacha_id_array = [line.rstrip() for line in gacha_id_array]
-for line in gacha_id_array:
-    items_request = http.request('GET', 'https://webstatic-sea.mihoyo.com/hk4e/gacha_info/%s/%s/%s.json'%(region,line,lang))
-    if items_request.status == 200:
-        items = items_request.data.decode("UTF-8")
-        items = ast.literal_eval(items)
-        for s5 in items['r5_prob_list']:
-            star_5_old.append([str(s5['item_id']),s5['item_type'],s5['item_name']])
-        for s4 in items['r4_prob_list']:
-            star_4_old.append([str(s4['item_id']),s4['item_type'],s4['item_name']])
-        for s3 in items['r3_prob_list']:
-            star_3_old.append([str(s3['item_id']),s3['item_type'],s3['item_name']])
-    else:
-        print('as')
+
+
+items_request = http.request('GET', 'https://webstatic-sea.mihoyo.com/hk4e/gacha_info/%s/%s/%s.json'%(region,'items',lang))
+if items_request.status == 200:
+    items = items_request.data.decode("UTF-8")
+    items = ast.literal_eval(items)
+    for item in items:
+        if item['rank_type']=='5':
+            star_5_old.append([str(item['item_id']),item['item_type'],item['name']])
+        elif item['rank_type']=='4':
+            star_4_old.append([str(item['item_id']),item['item_type'],item['name']])
+        elif item['rank_type']=='3':
+            star_3_old.append([str(item['item_id']),item['item_type'],item['name']])
+
 star_5_old = sorted(star_5_old)
 star_4_old = sorted(star_4_old)
 star_3_old = sorted(star_3_old)
