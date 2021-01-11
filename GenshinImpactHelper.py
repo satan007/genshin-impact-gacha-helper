@@ -7,7 +7,7 @@ import certifi
 import ast
 import csv
 import configparser
-import webbrowser
+import subprocess
 
 http = urllib3.PoolManager(ca_certs=certifi.where())
 environ_username = os.environ['username']
@@ -371,6 +371,7 @@ html_page = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewpo
 f=open(path+'\\index.html','w',encoding='utf-8')
 f.write(str(html_page))
 f.close()
-webbrowser.open (path+'\\index.html', new=2)
-#print(gacha_percent)
-#print('end')
+print(os.path.normpath(path +'\\index.html'))
+os.system("start {}".format(os.path.normpath(path +'\\index.html')))
+
+#input("Press Enter to close app...")

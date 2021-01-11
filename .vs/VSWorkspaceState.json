@@ -1,12 +1,13 @@
 {
   "ExpandedNodes": [
     "",
-    "\\items",
+    "\\.github",
+    "\\.github\\workflows",
     "\\items\\os_asia",
     "\\items\\os_asia\\ru-ru",
     "\\items\\os_euro",
     "\\items\\os_euro\\ru-ru"
   ],
-  "SelectedNode": "\\GenshinImpactHelper.py",
+  "SelectedNode": "\\.github\\workflows\\python-publish.yml",
   "PreviewInSolutionExplorer": false
 }
