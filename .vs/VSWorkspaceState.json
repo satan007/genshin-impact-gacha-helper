@@ -2,12 +2,8 @@
   "ExpandedNodes": [
     "",
     "\\.github",
-    "\\.github\\workflows",
-    "\\items\\os_asia",
-    "\\items\\os_asia\\ru-ru",
-    "\\items\\os_euro",
-    "\\items\\os_euro\\ru-ru"
+    "\\.github\\workflows"
   ],
-  "SelectedNode": "\\.github\\workflows\\python-publish.yml",
+  "SelectedNode": "\\items",
   "PreviewInSolutionExplorer": false
 }
