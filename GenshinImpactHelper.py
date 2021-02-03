@@ -163,7 +163,7 @@ for gacha in gacha_code:
     path_gacha_log = ''
     array = []
     while while_end == 0:
-        payload = {'authkey_ver':authkey_ver, 'region':region, 'authkey':authkey,'gacha_type':gacha, 'page':page, 'size':'20'}
+        payload = {'authkey_ver':authkey_ver, 'region':region, 'init_type':init_type, 'lang':lang, 'authkey':authkey,'gacha_type':gacha, 'page':page, 'size':'20'}
         newurl = 'https://hk4e-api-os.mihoyo.com/event/gacha_info/api/getGachaLog' 
         req = http.request('GET', newurl, fields=payload)
         dict_str = req.data.decode("UTF-8")
@@ -177,7 +177,7 @@ for gacha in gacha_code:
             while_end = 1
         else:
             for item_list in mydata['data']['list']:
-                array.append([item_list['item_id'],item_list['time']])
+                array.append([item_list['item_id'],item_list['time'],item_list['name'],item_list['item_type'],item_list['rank_type']])
             user_id = mydata['data']['list'][0]['uid']
             path_gacha_log = gacha_path+'\\'+region+'\\'+user_id
             create_directory(path_gacha_log)
@@ -185,7 +185,9 @@ for gacha in gacha_code:
     if path_gacha_log != '':
         f = open(path_gacha_log+'\\'+gacha+'.csv', 'w', encoding="utf-8")
         for i in array:
-            f.write(i[0]+','+i[1]+'\n')
+            if i[0]=='':
+                i[0]='0'
+            f.write(i[0]+','+i[1]+','+i[2]+','+i[3]+','+i[4]+'\n')
         f.close()
 
 lang_dict = {
@@ -277,6 +279,9 @@ gacha_percent={}
 s5_index=[]
 s4_index=[]
 s3_index=[]
+s5_index_name=[]
+s4_index_name=[]
+
 
 
 star_5 = open (path+'\\items\\'+region+'\\'+lang+'\\star_5.csv','r', encoding="utf-8")
@@ -291,8 +296,10 @@ star_3.close()
 
 for i in s5:
     s5_index.append(i[0])
+    s5_index_name.append(i[2])
 for i in s4:
     s4_index.append(i[0])
+    s4_index_name.append(i[2])
 for i in s3:
     s3_index.append(i[0])
 
@@ -322,10 +329,7 @@ for gacha in ['100','200','301','302']:
             gacha_dict[gacha][i].append(s5[index][2])
             gacha_dict[gacha][i].append(s5[index][1])
             gacha_dict[gacha][i].append('5')
-        else:
-            gacha_dict[gacha][i].append('')
-            gacha_dict[gacha][i].append('')
-            gacha_dict[gacha][i].append('-1')
+
     gacha_dict[gacha].reverse()
     s4_percent = 0,0
     s5_percent = 0,0
@@ -334,6 +338,13 @@ for gacha in ['100','200','301','302']:
     s3_count = -1
     gacha_img=''
     for i in gacha_dict[gacha]:
+        if i[0]=='0':
+            if i[4]=='4':
+                index = s4_index_name.index(i[2])
+                i[0]=s4[index][0]
+            if i[4]=='5':
+                index = s5_index_name.index(i[2])
+                i[0]=s5[index][0]
         s4_count=s4_count+1
         s5_count=s5_count+1
         s3_count = s3_count+1
