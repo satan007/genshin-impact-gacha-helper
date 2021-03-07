@@ -1,0 +1,84 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Genshin Impact Gacha Helper 0.4.2-beta\n"
+"POT-Creation-Date: 2021-03-06 19:07+0300\n"
+"PO-Revision-Date: 2021-03-06 22:18+0300\n"
+"Last-Translator: Алексей Никитин <alekcey_satan@mail.ru>\n"
+"Language-Team: alekcey_satan@mail.ru\n"
+"Language: ru_RU\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.4.2\n"
+"X-Poedit-Basepath: ../../..\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: GenshinImpactHelper.py:45
+msgid "New version found. Open Browser"
+msgstr "Найдена новая версия. Открываю браузер."
+
+#: GenshinImpactHelper.py:47
+msgid "Stage 1. Getting authorization data from a file."
+msgstr "Этап 1. Получение данных авторизации из файла."
+
+#: GenshinImpactHelper.py:49 GenshinImpactHelper.py:96
+msgid "No user data files found."
+msgstr "Файлы данных пользователя не найдены."
+
+#: GenshinImpactHelper.py:50 GenshinImpactHelper.py:97
+#: GenshinImpactHelper.py:250
+msgid "Press Enter to continue..."
+msgstr "Нажмите Enter для продолжения..."
+
+#: GenshinImpactHelper.py:53 GenshinImpactHelper.py:139
+msgid ""
+"No current authorization data was found. Are you sure you have discovered "
+"the history?"
+msgstr ""
+
+#: GenshinImpactHelper.py:54 GenshinImpactHelper.py:141
+msgid "Previously saved data is used. Differences in values are possible."
+msgstr ""
+
+#: GenshinImpactHelper.py:154
+#, python-brace-format
+msgid "Starting download {download_url}"
+msgstr ""
+
+#: GenshinImpactHelper.py:158
+#, python-brace-format
+msgid "Can't download file {download_url}"
+msgstr ""
+
+#: GenshinImpactHelper.py:159
+msgid "Create empty file"
+msgstr ""
+
+#: GenshinImpactHelper.py:163
+#, python-brace-format
+msgid "File uploaded successfully in {directory}"
+msgstr ""
+
+#: GenshinImpactHelper.py:171
+msgid "Failed to create directory"
+msgstr ""
+
+#: GenshinImpactHelper.py:185
+msgid "Stage 2. Download the History."
+msgstr ""
+
+#: GenshinImpactHelper.py:249
+msgid "Error in authorization data. Open the history and restart the program."
+msgstr ""
+
+#: GenshinImpactHelper.py:275
+msgid "Stage 2.1. Downloading translations."
+msgstr ""
+
+#: GenshinImpactHelper.py:286
+#, python-brace-format
+msgid "Not found {path}"
+msgstr ""

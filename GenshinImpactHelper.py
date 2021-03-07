@@ -10,6 +10,16 @@ import urllib.request
 
 import certifi
 import urllib3
+import ctypes
+import locale
+from gettext import gettext as _
+import gettext
+
+app_lang = locale.getdefaultlocale()
+
+windll = ctypes.windll.kernel32
+windll.GetUserDefaultUILanguage()
+app_lang = locale.windows_locale[windll.GetUserDefaultUILanguage()]
 
 version = '0.4.2-beta'
 
@@ -25,18 +35,25 @@ payload = dict()
 new_url = 'https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/version'
 req = http.request('GET', new_url, fields=payload)
 version_download = req.data.decode("UTF-8")
+
+os.environ['LANGUAGE'] = app_lang
+gettext.textdomain('GIGH')
+gettext.bindtextdomain('GIGH', path + '\\lang')
+
 if version != version_download[:-1]:
     os.system("start {}".format('https://github.com/satan007/genshin-impact-gacha-helper/releases/latest'))
-    print('Найдена новая версия. Открываю браузер')
+    print(_('New version found. Open Browser'))  # Найдена новая версия. Открываю браузер
 
-print('Этап 1. Получение данных авторизации из файла.')
+print(_('Stage 1. Getting authorization data from a file.'))  # Этап 1. Получение данных авторизации из файла.
 if not os.path.exists(file_path) and not os.path.exists(setting_path):  # output_log.txt и settings.ini не найдены
-    print('Файлы данных пользователя не найдены.')
-    input("Press Enter to continue...")
+    print(_('No user data files found.'))  # Файлы данных пользователя не найдены.
+    input(_('Press Enter to continue...'))
     sys.exit()
 elif not os.path.exists(file_path) and os.path.exists(setting_path):  # output_log.txt не найден
-    print('Актуальные данные авторизации не найдены. Вы точно открывали историю молитв?')
-    print('Используются ранее сохраненные данные. Возможны расхождения значений.')
+    print(_(
+        'No current authorization data was found. Are you sure you have discovered the history?'))  # Актуальные данные авторизации не найдены. Вы точно открывали историю молитв?
+    print(_(
+        'Previously saved data is used. Differences in values are possible.'))  # Используются ранее сохраненные данные. Возможны расхождения значений.
     config.read(setting_path)
     region = config.get('Settings', 'server')
     lang = config.get('Settings', 'lang')
@@ -78,8 +95,8 @@ elif os.path.exists(file_path) and not os.path.exists(setting_path):  # settings
         with open(setting_path, "w") as config_file:
             config.write(config_file)
     else:
-        print('Файлы данных пользователя не найдены.')
-        input("Press Enter to continue...")
+        print(_('No user data files found.'))  # Файлы данных пользователя не найдены.
+        input(_('Press Enter to continue...'))
         sys.exit()
 elif os.path.exists(file_path) and os.path.exists(setting_path):  # оба файла на месте
     f = open(file_path, 'r', encoding="utf-8")
@@ -120,8 +137,10 @@ elif os.path.exists(file_path) and os.path.exists(setting_path):  # оба фа�
         with open(setting_path, "w") as config_file:
             config.write(config_file)
     else:
-        print('Актуальные данные авторизации не найдены. Вы точно открывали историю молитв?')
-        print('Используются ранее сохраненные данные. Возможны расхождения значений.')
+        print(_(
+            'No current authorization data was found. Are you sure you have discovered the history?'))  # Актуальные данные авторизации не найдены. Вы точно открывали историю молитв?
+        print(_(
+            'Previously saved data is used. Differences in values are possible.'))  # Используются ранее сохраненные данные. Возможны расхождения значений.
         config.read(setting_path)
         region = config.get('Settings', 'server')
         lang = config.get('Settings', 'lang')
@@ -134,16 +153,16 @@ elif os.path.exists(file_path) and os.path.exists(setting_path):  # оба фа�
 
 
 def download_file(url, save_path):
-    print('Начинаю загрузку {}'.format(url))
+    print(_('Starting download {download_url}'.format(download_url=url)))
     try:
         urllib.request.urlretrieve(url, save_path)
     except:
-        print("Не могу загрузить файл {}".format(url))
-        print("Создаю пустой файл")
+        print(_("Can't download file {download_url}".format(download_url=url)))
+        print(_('Create empty file'))
         file = open(save_path, 'w', encoding="utf-8")
         file.close()
     pass
-    print('Файл загружен успешно в {}'.format(save_path))
+    print(_('File uploaded successfully in {directory}'.format(directory=save_path)))
 
 
 def create_directory(path):
@@ -151,21 +170,21 @@ def create_directory(path):
         os.mkdir(path)
     except OSError:
         if not os.path.exists(path):
-            print("Создать директорию не удалось")
+            print(_('Failed to create directory'))
     pass
 
 
 gacha_path = path + '\\' + 'gacha'
 
 create_directory(gacha_path)
-create_directory('{0}\\{1}'.format(gacha_path, region))
+create_directory('{}\\{}'.format(gacha_path, region))
 
 if not os.path.exists(gacha_path + '\\' + 'gacha_custom_code_list'):
     f = open(gacha_path + '\\' + 'gacha_custom_code_list', 'w', encoding='utf-8')
     f.close()
 f = open(gacha_path + '\\' + 'gacha_custom_code_list', 'r', encoding='utf-8')
 
-print('Этап 2. Получение истории молитв.')
+print(_('Stage 2. Download the History.'))  # Этап 2. Получение истории молитв.
 
 lang_dict = {
     'en': "en-us",
@@ -229,8 +248,9 @@ for gacha in gacha_code[lang]:
         try:
             my_data = ast.literal_eval(dict_str)
         except:
-            print('\nОшибка в данных авторизации. Откройте историю молитв и перезапустите программу.')
-            input("Press Enter to continue...")
+            print(_(
+                'Error in authorization data. Open the history and restart the program.'))  # Ошибка в данных авторизации. Откройте историю молитв и перезапустите программу.
+            input(_("Press Enter to continue..."))
             sys.exit()
         if not my_data['data']['list']:
             while_end = 1
@@ -255,18 +275,23 @@ items_path = path + '\\' + 'items'
 create_directory(items_path + '\\' + region)
 create_directory(items_path + '\\' + region + '\\' + lang)
 
-print('Этап 2.1. Получение переводов для разных языков')
-download_file('https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/banner_code_list', path + '\\' + 'banner_code_list')
+print(_('Stage 2.1. Downloading translations.'))  # Этап 2.1. Получение переводов для разных языков
+download_file('https://raw.githubusercontent.com/satan007/genshin-impact-gacha-helper/main/banner_code_list',
+              path + '\\' + 'banner_code_list')
 
 try:
-    banner_code_list = open(path+'\\'+'banner_code_list', 'r', encoding="utf-8")
+    banner_code_list = open(path + '\\' + 'banner_code_list', 'r', encoding="utf-8")
     for g in banner_code_list:
         if g[:-1] not in banner_list:
             banner_list.append(g[:-1])
     banner_code_list.close()
 except:
-    print ("Не могу найти файл {}\\banner_code_list".format(banner_code_list))
-
+    print(_('Not found {path}'.format(path=path + '\\banner_code_list')))
+banner_list.sort()
+banner_code_list = open(path + '\\' + 'banner_code_list', 'w', encoding="utf-8")
+for g in banner_list:
+    banner_code_list.write(g + '\n')
+banner_code_list.close()
 star_5 = []
 star_4 = []
 star_3 = []
@@ -332,12 +357,14 @@ for i in banner_list:
         items = ast.literal_eval(items)
         for item in items.get('r5_up_items'):
             star_5_old.append(
-                [str(item.get('item_id')), item.get('item_type'), item.get('item_name'), item.get('item_img','').replace("\\", ""),
-                 item.get('item_attr','')])
+                [str(item.get('item_id')), item.get('item_type'), item.get('item_name'),
+                 item.get('item_img', '').replace("\\", ""),
+                 item.get('item_attr', '')])
         for item in items.get('r4_up_items'):
             star_4_old.append(
-                [str(item.get('item_id')), item.get('item_type'), item.get('item_name'), item.get('item_img','').replace("\\", ""),
-                 item.get('item_attr','')])
+                [str(item.get('item_id')), item.get('item_type'), item.get('item_name'),
+                 item.get('item_img', '').replace("\\", ""),
+                 item.get('item_attr', '')])
 
 star_5_old = sorted(star_5_old)
 star_4_old = sorted(star_4_old)
@@ -441,7 +468,9 @@ for gacha in gacha_code[lang]:
     s4_count = 1
     s5_count = 1
     s3_count = -1
+    count = 0
     gacha_img = ''
+    graph = '<div><div class="row"><div class="col"><table bordercolor="#fa8e47" border style="width: 100%;"><tbody><tr>'
     for i in gacha_dict[gacha['key']]:
         if i[0] == '0':
             if i[4] == '4':
@@ -455,6 +484,9 @@ for gacha in gacha_code[lang]:
         s4_count = s4_count + 1
         s5_count = s5_count + 1
         s3_count = s3_count + 1
+        if count % 40 == 0:
+            graph = graph + '</tr><tr>'
+        count = count + 1
         f = open(path + '\\assets\\img_block.html', 'r', encoding="utf-8")
         img_block = f.read()
         f.close()
@@ -467,6 +499,7 @@ for gacha in gacha_code[lang]:
                     i[5], i[2])
             s4_count = 1
             s3_count = -1
+            graph = graph + '<td style="background-color: #9c27b0;height: 25px;"></td>'
         elif i[4] == '5':
             if i[5] == '':
                 gacha_img = gacha_img + img_block.format(
@@ -476,6 +509,9 @@ for gacha in gacha_code[lang]:
                     i[5], i[2])
             s5_count = 1
             s3_count = -1
+            graph = graph + '<td style="background-color: gold;height: 25px;"></td>'
+        elif i[4] == '3':
+            graph = graph + '<td style="background-color: #007bff;height: 25px;"></td>'
         elif i[4] == '-1':
             gacha_img = gacha_img + '<img style="width: 20%; border-radius: 0 0 25% 0;" src="items/img/{}.png" />'.format(
                 i[0])
@@ -488,6 +524,7 @@ for gacha in gacha_code[lang]:
         if s5_count == 80:
             s5_percent = 100.0
         if s4_count == 10:
+            s4_percent = 100.0
             s5_percent = 0.7
     else:
         s5_percent = (1 - ((1 - 0.006) ** s5_count)) * 100
@@ -497,9 +534,12 @@ for gacha in gacha_code[lang]:
         if s4_count == 10:
             s4_percent = 100.0
             s5_percent = 0.6
+    graph = graph + '</tr></tbody></table></div></div></div>'
     gacha_percent[gacha['key']] = {'star_4': s4_percent, 'star_5': s5_percent, 'star_4_count': s4_count,
-                                   'star_5_count': s5_count, 'img': gacha_img, 'count': len(gacha_dict[gacha['key']])}
+                                   'star_5_count': s5_count, 'img': gacha_img, 'count': count,
+                                   'graph': graph}
     gacha_translated.close()
+
 f = open(path + '\\assets\\page.html', 'r', encoding="utf-8")
 html_page = f.read()
 f.close()
@@ -507,27 +547,41 @@ html_page_format = {}
 for gacha in gacha_code[lang]:
     html_page_format[gacha['key']] = gacha['name']
 html_page = html_page.format(
-    str('{}({})'.format(html_page_format['100'], gacha_percent['100']['count'])),
-    str(round(gacha_percent['100']['star_4'])),
-    str(round(gacha_percent['100']['star_4'], 3)), str(round(gacha_percent['100']['star_5'])),
-    str(round(gacha_percent['100']['star_5'], 3)), str(gacha_percent['100']['star_4_count']),
-    str(gacha_percent['100']['star_5_count']), str(gacha_percent['100']['img']),
-    str('{}({})'.format(html_page_format['200'], gacha_percent['200']['count'])),
-    str(round(gacha_percent['200']['star_4'])), str(round(gacha_percent['200']['star_4'], 3)),
-    str(round(gacha_percent['200']['star_5'])), str(round(gacha_percent['200']['star_5'], 3)),
-    str(gacha_percent['200']['star_4_count']), str(gacha_percent['200']['star_5_count']),
-    str(gacha_percent['200']['img']), str('{}({})'.format(html_page_format['301'], gacha_percent['301']['count'])),
-    str(round(gacha_percent['301']['star_4'])),
-    str(round(gacha_percent['301']['star_4'], 3)), str(round(gacha_percent['301']['star_5'])),
-    str(round(gacha_percent['301']['star_5'], 3)), str(gacha_percent['301']['star_4_count']),
-    str(gacha_percent['301']['star_5_count']), str(gacha_percent['301']['img']),
-    str('{}({})'.format(html_page_format['302'], gacha_percent['302']['count'])),
-    str(round(gacha_percent['302']['star_4'])), str(round(gacha_percent['302']['star_4'], 3)),
-    str(round(gacha_percent['302']['star_5'])), str(round(gacha_percent['302']['star_5'], 3)),
-    str(gacha_percent['302']['star_4_count']), str(gacha_percent['302']['star_5_count']),
-    str(gacha_percent['302']['img']))
+    head_100=str('{}({})'.format(html_page_format['100'], gacha_percent['100']['count'])),
+    star_4_percent_100=str(round(gacha_percent['100']['star_4'])),
+    star_4_percent_100_text=str(round(gacha_percent['100']['star_4'], 3)),
+    star_5_percent_100=str(round(gacha_percent['100']['star_5'])),
+    star_5_percent_100_text=str(round(gacha_percent['100']['star_5'], 3)),
+    star_4_100=str(gacha_percent['100']['star_4_count']) + r'\10',
+    star_5_100=str(gacha_percent['100']['star_5_count']) + r'\90',
+    img_100=str(gacha_percent['100']['img']) + str(gacha_percent['100']['graph']),
+    head_200=str('{}({})'.format(html_page_format['200'], gacha_percent['200']['count'])),
+    star_4_percent_200=str(round(gacha_percent['200']['star_4'])),
+    star_4_percent_200_text=str(round(gacha_percent['200']['star_4'], 3)),
+    star_5_percent_200=str(round(gacha_percent['200']['star_5'])),
+    star_5_percent_200_text=str(round(gacha_percent['200']['star_5'], 3)),
+    star_4_200=str(gacha_percent['200']['star_4_count']) + r'\10',
+    star_5_200=str(gacha_percent['200']['star_5_count']) + r'\90',
+    img_200=str(gacha_percent['200']['img']) + str(gacha_percent['200']['graph']),
+    head_301=str('{}({})'.format(html_page_format['301'], gacha_percent['301']['count'])),
+    star_4_percent_301=str(round(gacha_percent['301']['star_4'])),
+    star_4_percent_301_text=str(round(gacha_percent['301']['star_4'], 3)),
+    star_5_percent_301=str(round(gacha_percent['301']['star_5'])),
+    star_5_percent_301_text=str(round(gacha_percent['301']['star_5'], 3)),
+    star_4_301=str(gacha_percent['301']['star_4_count']) + r'\10',
+    star_5_301=str(gacha_percent['301']['star_5_count']) + r'\90',
+    img_301=str(gacha_percent['301']['img']) + str(gacha_percent['301']['graph']),
+    head_302=str('{}({})'.format(html_page_format['302'], gacha_percent['302']['count'])),
+    star_4_percent_302=str(round(gacha_percent['302']['star_4'])),
+    star_4_percent_302_text=str(round(gacha_percent['302']['star_4'], 3)),
+    star_5_percent_302=str(round(gacha_percent['302']['star_5'])),
+    star_5_percent_302_text=str(round(gacha_percent['302']['star_5'], 3)),
+    star_4_302=str(gacha_percent['302']['star_4_count']) + r'\10',
+    star_5_302=str(gacha_percent['302']['star_5_count']) + r'\80',
+    img_302=str(gacha_percent['302']['img']) + str(gacha_percent['302']['graph']))
 now_time = datetime.datetime.now()
-print('Формирование странички с результатом. {}\{}.html'.format(path, now_time.strftime("%Y_%m_%d-%H_%M_%S")))
+print('Формирование странички с результатом. {html_path}'.format(
+    html_path=path + '\\' + now_time.strftime("%Y_%m_%d-%H_%M_%S") + '.html'))
 f = open(path + '\\' + now_time.strftime("%Y_%m_%d-%H_%M_%S") + '.html', 'w', encoding='utf-8')
 f.write(str(html_page))
 f.close()
