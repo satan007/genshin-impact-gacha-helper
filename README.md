@@ -11,8 +11,11 @@
 
 Возможные ошибки
 ---
-1. Программа может завысить вероятности молитв, если последним был получен один из персонажей: Венти, Кли, Тарталья или Чжун Ли
-2. История молитвы обновляется с задержкой в 1 час, сведения могут еще не появится
+1. История молитвы обновляется с задержкой в 1 час, сведения могут еще не появится
+
+Перевод
+---
+Добавляю поддержку переводов https://poeditor.com/join/project?hash=03NFC2SCBE
 
 Контакты
 ---
@@ -27,16 +30,20 @@ in English
 Run
 ---
 1. To start the program for the first time, you need to start the game and go through authorization.
-2. After loading the characters, go to the prayer section and click on the "History" button in the lower left corner.
-3. After loading the window with prayer stories, the story window can be closed.
+2. After loading the characters, go to the wish section and click on the "History" button in the lower left corner.
+3. After loading the window with history, the history window can be closed.
 4. Minimize the game and run the GenshinImpactHelper.exe program
 
 The following times the program can use the saved authorization data and not require entering the game with viewing the history of prayers. But the authorization data may become outdated and give an incorrect result.
 
 Possible mistakes
 ---
-1. The program can overestimate the probabilities of prayers if the last one received one of the characters: Venti, Kli, Tartaglia or Zhong Li
-2. The history of the prayer is updated with a delay of 1 hour, the information may not appear yet
+1. The history of the prayer is updated with a delay of 1 hour, the information may not appear yet
+
+Translate
+---
+Add translate system https://poeditor.com/join/project?hash=03NFC2SCBE
+P.S. I know a little English and use Google Translate to translate this app. Please help me with translation.
 
 Contacts
 ---
