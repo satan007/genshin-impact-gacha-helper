@@ -91,7 +91,7 @@ elif os.path.exists(file_path) and not os.path.exists(setting_path):  # settings
         config.add_section('Check')
         config.set('Check', 'last_banner_id', gacha_id)
         config.set('Check', 'last_banner_code', init_type)
-        config.set('Check', 'banner_id_list', init_type)
+        config.set('Check', 'banner_id_list',  str(banner_list))
         with open(setting_path, "w") as config_file:
             config.write(config_file)
     else:
@@ -236,12 +236,12 @@ gacha_code = {'en-us': [{'key': '200', 'name': 'Permanent Wish'}, {'key': '100',
 lang = lang_dict[lang]
 for gacha in gacha_code[lang]:
     while_end = 0
-    page = 1
     path_gacha_log = ''
     array = []
+    endid=0
     while while_end == 0:
         payload = dict(authkey_ver=authkey_ver, region=region, init_type=init_type, lang=lang, authkey=authkey,
-                       gacha_type=gacha['key'], page=page, size='20')
+                       gacha_type=gacha['key'], end_id=endid, size='20')
         new_url = 'https://hk4e-api-os.mihoyo.com/event/gacha_info/api/getGachaLog'
         req = http.request('GET', new_url, fields=payload)
         dict_str = req.data.decode("UTF-8")
@@ -258,10 +258,11 @@ for gacha in gacha_code[lang]:
             for item_list in my_data['data']['list']:
                 array.append([item_list['item_id'], item_list['time'], item_list['name'], item_list['item_type'],
                               item_list['rank_type']])
+                endid = item_list['id']
             user_id = my_data['data']['list'][0]['uid']
+
             path_gacha_log = gacha_path + '\\' + region + '\\' + user_id
             create_directory(path_gacha_log)
-        page = page + 1
     if path_gacha_log != '':
         f = open(path_gacha_log + '\\' + gacha['key'] + '.csv', 'w', encoding="utf-8")
         for i in array:
@@ -384,21 +385,21 @@ for l in star_5:
     try:
         f.write(str(l[0]) + ',' + str(l[1]) + ',' + str(l[2]) + ',' + str(l[3]) + ',' + str(l[4]) + '\n')
     except:
-        print('Неверный формат строки: {}'.format(l))
+        print(_('Неверный формат строки: {}'.format(l)))
 f.close()
 f = open(path + '\\items\\' + region + '\\' + lang + '\\star_4.csv', 'w', encoding="utf-8")
 for l in star_4:
     try:
         f.write(str(l[0]) + ',' + str(l[1]) + ',' + str(l[2]) + ',' + str(l[3]) + ',' + str(l[4]) + '\n')
     except:
-        print('Неверный формат строки: {}'.format(l))
+        print(_('Неверный формат строки: {}'.format(l)))
 f.close()
 f = open(path + '\\items\\' + region + '\\' + lang + '\\star_3.csv', 'w', encoding="utf-8")
 for l in star_3:
     try:
         f.write(str(l[0]) + ',' + str(l[1]) + ',' + str(l[2]) + ',' + str(l[3]) + ',' + str(l[4]) + '\n')
     except:
-        print('Неверный формат строки: {}'.format(l))
+        print(_('Неверный формат строки: {}'.format(l)))
 f.close()
 
 # Шаг №3. Получение сохраненных ранее данных и расчет вероятности
@@ -430,7 +431,7 @@ for i in s4:
 for i in s3:
     s3_index.append(i[0])
 
-print('Этап 3. Расчет вероятности молитв')
+print(_('Этап 3. Расчет вероятности молитв'))
 for gacha in gacha_code[lang]:
     gacha_translated = open(gacha_path + '\\' + region + '\\' + user_id + '\\' + 'end_%s.csv' % gacha['key'], 'w',
                             encoding='utf-8')
@@ -438,7 +439,7 @@ for gacha in gacha_code[lang]:
         f = open(gacha_path + '\\' + region + '\\' + user_id + '\\' + gacha['key'] + '.csv', 'r', encoding="utf-8")
         gacha_dict[gacha['key']] = list(csv.reader(f))
     except:
-        print('Файл {} не найден'.format(gacha_path + '\\' + region + '\\' + user_id + '\\' + gacha['key'] + '.csv'))
+        print(_('Файл {} не найден'.format(gacha_path + '\\' + region + '\\' + user_id + '\\' + gacha['key'] + '.csv')))
         gacha_dict[gacha['key']] = list('')
 
     # print(len(gacha_dict[gacha]))
@@ -580,8 +581,8 @@ html_page = html_page.format(
     star_5_302=str(gacha_percent['302']['star_5_count']) + r'\80',
     img_302=str(gacha_percent['302']['img']) + str(gacha_percent['302']['graph']))
 now_time = datetime.datetime.now()
-print('Формирование странички с результатом. {html_path}'.format(
-    html_path=path + '\\' + now_time.strftime("%Y_%m_%d-%H_%M_%S") + '.html'))
+print(_('Формирование странички с результатом. {html_path}'.format(
+    html_path=path + '\\' + now_time.strftime("%Y_%m_%d-%H_%M_%S") + '.html')))
 f = open(path + '\\' + now_time.strftime("%Y_%m_%d-%H_%M_%S") + '.html', 'w', encoding='utf-8')
 f.write(str(html_page))
 f.close()
