@@ -21,7 +21,7 @@ windll = ctypes.windll.kernel32
 windll.GetUserDefaultUILanguage()
 app_lang = locale.windows_locale[windll.GetUserDefaultUILanguage()]
 
-version = '0.4.2-beta'
+version = '0.5-beta'
 
 http = urllib3.PoolManager(ca_certs=certifi.where())
 environ_username = os.environ['username']
