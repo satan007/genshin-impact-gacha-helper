@@ -7,6 +7,7 @@ import re
 import sys
 import urllib.parse
 import urllib.request
+import webbrowser
 
 import certifi
 import urllib3
@@ -41,7 +42,7 @@ gettext.textdomain('GIGH')
 gettext.bindtextdomain('GIGH', path + '\\lang')
 
 if version != version_download[:-1]:
-    os.system("start {}".format('https://github.com/satan007/genshin-impact-gacha-helper/releases/latest'))
+    webbrpwser.open('https://github.com/satan007/genshin-impact-gacha-helper/releases/latest', new=2)
     print(_('New version found. Open Browser'))  # Найдена новая версия. Открываю браузер
 
 print(_('Stage 1. Getting authorization data from a file.'))  # Этап 1. Получение данных авторизации из файла.
@@ -589,4 +590,4 @@ f.close()
 html_path = os.path.abspath(path + '\\' + now_time.strftime("%Y_%m_%d-%H_%M_%S") + '.html')
 sys.stdout = os.devnull
 sys.stderr = os.devnull
-os.system("start {}".format(html_path))
+webbrowser.open(html_path, new=2)
